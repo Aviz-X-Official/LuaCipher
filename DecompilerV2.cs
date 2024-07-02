@@ -148,161 +148,161 @@ namespace LuaCipher
             int sbx = bx - 131071;
 
             switch ((Opcode)opcode)
-            {
-                case Opcode.MOVE:
-                    return FormatInstruction("local", $"R[{a}] = R[{b}]");
-                case Opcode.LOADK:
-                    return FormatInstruction("local", $"R[{a}] = K[{bx}]");
-                case Opcode.LOADBOOL:
-                    return FormatInstruction("local", $"R[{a}] = {(b != 0 ? "true" : "false")}; if ({c} != 0) then pc++ end");
-                case Opcode.LOADNIL:
-                    return FormatInstruction("local", $"for i = {a}, {a + b} do R[i] = nil end");
-                case Opcode.GETUPVAL:
-                    return FormatInstruction("local", $"R[{a}] = UpValue[{b}]");
-                case Opcode.GETGLOBAL:
-                    return FormatInstruction("local", $"R[{a}] = _G[{bx}]");
-                case Opcode.GETTABLE:
-                    return FormatInstruction("local", $"R[{a}] = R[{b}][RK[{c}]]");
-                case Opcode.SETGLOBAL:
-                    return FormatInstruction("local", $"_G[{bx}] = R[{a}]");
-                case Opcode.SETUPVAL:
-                    return FormatInstruction("local", $"UpValue[{b}] = R[{a}]");
-                case Opcode.SETTABLE:
-                    return FormatInstruction("local", $"R[{a}][RK[{b}]] = RK[{c}]");
-                case Opcode.NEWTABLE:
-                    return FormatInstruction("local", $"R[{a}] = {{}} -- size = {b},{c}");
-                case Opcode.SELF:
-                    return FormatInstruction("local", $"R[{a + 1}] = R[{b}]; R[{a}] = R[{b}][RK[{c}]]");
-                case Opcode.ADD:
-                    return FormatInstruction("local", $"R[{a}] = RK[{b}] + RK[{c}]");
-                case Opcode.SUB:
-                    return FormatInstruction("local", $"R[{a}] = RK[{b}] - RK[{c}]");
-                case Opcode.MUL:
-                    return FormatInstruction("local", $"R[{a}] = RK[{b}] * RK[{c}]");
-                case Opcode.DIV:
-                    return FormatInstruction("local", $"R[{a}] = RK[{b}] / RK[{c}]");
-                case Opcode.MOD:
-                    return FormatInstruction("local", $"R[{a}] = RK[{b}] % RK[{c}]");
-                case Opcode.POW:
-                    return FormatInstruction("local", $"R[{a}] = RK[{b}] ^ RK[{c}]");
-                case Opcode.UNM:
-                    return FormatInstruction("local", $"R[{a}] = -R[{b}]");
-                case Opcode.NOT:
-                    return FormatInstruction("local", $"R[{a}] = not R[{b}]");
-                case Opcode.LEN:
-                    return FormatInstruction("local", $"R[{a}] = #R[{b}]");
-                case Opcode.CONCAT:
-                    return FormatInstruction("local", $"R[{a}] = R[{b}] .. R[{c}]");
-                case Opcode.JMP:
-                    return FormatInstruction("local", $"pc += {sbx}");
-                case Opcode.EQ:
-                    return FormatInstruction("local", $"if R[{b}] == R[{c}] then pc++ end");
-                case Opcode.LT:
-                    return FormatInstruction("local", $"if R[{b}] < R[{c}] then pc++ end");
-                case Opcode.LE:
-                    return FormatInstruction("local", $"if R[{b}] <= R[{c}] then pc++ end");
-                case Opcode.TEST:
-                    return FormatInstruction("local", $"if not R[{a}] then pc++ end");
-                case Opcode.TESTSET:
-                    return FormatInstruction("local", $"if R[{b}] then R[{a}] = R[{b}] else pc++ end");
-                case Opcode.CALL:
-                    return FormatInstruction("local", $"R[{a}] = R[{a}]({GetArguments(a + 1, b - 1)}); R[{a + b - 1}] = {GetArguments(a, c - 1)}");
-                case Opcode.TAILCALL:
-                    return FormatInstruction("local", $"return R[{a}]({GetArguments(a + 1, b - 1)})");
-                case Opcode.RETURN:
-                    return FormatInstruction("local", $"return {GetArguments(a, b - 1)}");
-                case Opcode.FORLOOP:
-                    return FormatInstruction("local", $"R[{a}] += R[{a + 2}]; if R[{a}] <= R[{a + 1}] then pc += {sbx}; R[{a + 3}] = R[{a}]");
-                case Opcode.FORPREP:
-                    return FormatInstruction("local", $"R[{a}] -= R[{a + 2}]; pc += {sbx}");
-                case Opcode.TFORCALL:
-                    return FormatInstruction("local", $"R[{a + 3}] = R[{a}]({GetArguments(a + 1, c)})");
-                case Opcode.TFORLOOP:
-                    return FormatInstruction("local", $"if R[{a + 1}] then R[{a + 3}] = R[{a + 1}]; pc += {sbx} end");
-                case Opcode.SETLIST:
-                    return FormatInstruction("local", $"for i = 1, {b} do R[{a}][i + {(c - 1) * 50}] = R[{a + i}] end");
-                case Opcode.CLOSURE:
-                    return FormatInstruction("local", $"R[{a}] = function(K[{bx}]) end");
-                case Opcode.VARARG:
-                    return FormatInstruction("local", $"R[{a}] = ...");
-                case Opcode.EXTRAARG:
-                    return FormatInstruction("local", $"-- EXTRAARG with value {bx}");
-                case Opcode.LOADKX:
-                    return FormatInstruction("local", $"R[{a}] = K[EXTRAARG]");
-                case Opcode.GETTABUP:
-                    return FormatInstruction("local", $"R[{a}] = UpValue[{b}][RK[{c}]]");
-                case Opcode.SETTABUP:
-                    return FormatInstruction("local", $"UpValue[{a}][RK[{b}]] = RK[{c}]");
-                case Opcode.TAILCALLI:
-                    return FormatInstruction("local", $"return R[{a}]({GetArguments(a + 1, b - 1)})");
-                case Opcode.GETUPVALI:
-                    return FormatInstruction("local", $"R[{a}] = UpValue[{b}]");
-                case Opcode.GETGLOBALI:
-                    return FormatInstruction("local", $"R[{a}] = _G[{bx}]");
-                case Opcode.GETTABLEI:
-                    return FormatInstruction("local", $"R[{a}] = R[{b}][RK[{c}]]");
-                case Opcode.SETUPVALI:
-                    return FormatInstruction("local", $"UpValue[{b}] = R[{a}]");
-                case Opcode.SETGLOBALI:
-                    return FormatInstruction("local", $"_G[{bx}] = R[{a}]");
-                case Opcode.SETTABLEI:
-                    return FormatInstruction("local", $"R[{a}][RK[{b}]] = RK[{c}]");
-                case Opcode.NEWTABLEI:
-                    return FormatInstruction("local", $"R[{a}] = {{}} -- size = {b},{c}");
-                case Opcode.SELF2:
-                    return FormatInstruction("local", $"R[{a + 1}] = R[{b}]; R[{a}] = R[{b}][RK[{c}]]");
-                case Opcode.ADD2:
-                    return FormatInstruction("local", $"R[{a}] = RK[{b}] + RK[{c}]");
-                case Opcode.SUB2:
-                    return FormatInstruction("local", $"R[{a}] = RK[{b}] - RK[{c}]");
-                case Opcode.MUL2:
-                    return FormatInstruction("local", $"R[{a}] = RK[{b}] * RK[{c}]");
-                case Opcode.DIV2:
-                    return FormatInstruction("local", $"R[{a}] = RK[{b}] / RK[{c}]");
-                case Opcode.MOD2:
-                    return FormatInstruction("local", $"R[{a}] = RK[{b}] % RK[{c}]");
-                case Opcode.POW2:
-                    return FormatInstruction("local", $"R[{a}] = RK[{b}] ^ RK[{c}]");
-                case Opcode.UNM2:
-                    return FormatInstruction("local", $"R[{a}] = -R[{b}]");
-                case Opcode.NOT2:
-                    return FormatInstruction("local", $"R[{a}] = not R[{b}]");
-                case Opcode.LEN2:
-                    return FormatInstruction("local", $"R[{a}] = #R[{b}]");
-                case Opcode.CONCAT2:
-                    return FormatInstruction("local", $"R[{a}] = R[{b}] .. R[{c}]");
-                case Opcode.JMP2:
-                    return FormatInstruction("local", $"pc += {sbx}");
-                case Opcode.EQ2:
-                    return FormatInstruction("local", $"if R[{b}] == R[{c}] then pc++ end");
-                case Opcode.LT2:
-                    return FormatInstruction("local", $"if R[{b}] < R[{c}] then pc++ end");
-                case Opcode.LE2:
-                    return FormatInstruction("local", $"if R[{b}] <= R[{c}] then pc++ end");
-                case Opcode.TEST2:
-                    return FormatInstruction("local", $"if not R[{a}] then pc++ end");
-                case Opcode.TESTSET2:
-                    return FormatInstruction("local", $"if R[{b}] then R[{a}] = R[{b}] else pc++ end");
-                case Opcode.CALL2:
-                    return FormatInstruction("local", $"R[{a}] = R[{a}]({GetArguments(a + 1, b - 1)}); R[{a + b - 1}] = {GetArguments(a, c - 1)}");
-                case Opcode.RETURN2:
-                    return FormatInstruction("local", $"return {GetArguments(a, b - 1)}");
-                case Opcode.FORLOOP2:
-                    return FormatInstruction("local", $"R[{a}] += R[{a + 2}]; if R[{a}] <= R[{a + 1}] then pc += {sbx}; R[{a + 3}] = R[{a}]");
-                case Opcode.FORPREP2:
-                    return FormatInstruction("local", $"R[{a}] -= R[{a + 2}]; pc += {sbx}");
-                case Opcode.TFORCALL2:
-                    return FormatInstruction("local", $"R[{a + 3}] = R[{a}]({GetArguments(a + 1, c)})");
-                case Opcode.TFORLOOP2:
-                    return FormatInstruction("local", $"if R[{a + 1}] then R[{a + 3}] = R[{a + 1}]; pc += {sbx} end");
-                case Opcode.SETLIST2:
-                    return FormatInstruction("local", $"for i = 1, {b} do R[{a}][i + {(c - 1) * 50}] = R[{a + i}] end");
-                case Opcode.CLOSE2:
-                    return FormatInstruction("local", $"-- CLOSE2 operation");
-                case Opcode.CLOSURE2:
-                    return FormatInstruction("local", $"R[{a}] = function(K[{bx}]) end");
-                case Opcode.VARARG2:
-                    return FormatInstruction("local", $"R[{a}] = ...");
+{
+    case Opcode.MOVE:
+        return FormatInstruction($"R[{a}] = R[{b}]");
+    case Opcode.LOADK:
+        return FormatInstruction($"R[{a}] = K[{bx}]");
+    case Opcode.LOADBOOL:
+        return FormatInstruction($"R[{a}] = {(b != 0 ? "true" : "false")}; if ({c} != 0) then pc++ end");
+    case Opcode.LOADNIL:
+        return FormatInstruction($"for i = {a}, {a + b} do R[i] = nil end");
+    case Opcode.GETUPVAL:
+        return FormatInstruction($"R[{a}] = UpValue[{b}]");
+    case Opcode.GETGLOBAL:
+        return FormatInstruction($"R[{a}] = _G[{bx}]");
+    case Opcode.GETTABLE:
+        return FormatInstruction($"R[{a}] = R[{b}][RK[{c}]]");
+    case Opcode.SETGLOBAL:
+        return FormatInstruction($"_G[{bx}] = R[{a}]");
+    case Opcode.SETUPVAL:
+        return FormatInstruction($"UpValue[{b}] = R[{a}]");
+    case Opcode.SETTABLE:
+        return FormatInstruction($"R[{a}] = R[{b}][RK[{c}]]");
+    case Opcode.NEWTABLE:
+        return FormatInstruction($"R[{a}] = {{}} -- size = {b},{c}");
+    case Opcode.SELF:
+        return FormatInstruction($"R[{a + 1}] = R[{b}]; R[{a}] = R[{b}][RK[{c}]]");
+    case Opcode.ADD:
+        return FormatInstruction($"R[{a}] = RK[{b}] + RK[{c}]");
+    case Opcode.SUB:
+        return FormatInstruction($"R[{a}] = RK[{b}] - RK[{c}]");
+    case Opcode.MUL:
+        return FormatInstruction($"R[{a}] = RK[{b}] * RK[{c}]");
+    case Opcode.DIV:
+        return FormatInstruction($"R[{a}] = RK[{b}] / RK[{c}]");
+    case Opcode.MOD:
+        return FormatInstruction($"R[{a}] = RK[{b}] % RK[{c}]");
+    case Opcode.POW:
+        return FormatInstruction($"R[{a}] = RK[{b}] ^ RK[{c}]");
+    case Opcode.UNM:
+        return FormatInstruction($"R[{a}] = -R[{b}]");
+    case Opcode.NOT:
+        return FormatInstruction($"R[{a}] = not R[{b}]");
+    case Opcode.LEN:
+        return FormatInstruction($"R[{a}] = #R[{b}]");
+    case Opcode.CONCAT:
+        return FormatInstruction($"R[{a}] = R[{b}] .. R[{c}]");
+    case Opcode.JMP:
+        return FormatInstruction($"pc += {sbx}");
+    case Opcode.EQ:
+        return FormatInstruction($"if R[{b}] == R[{c}] then pc++ end");
+    case Opcode.LT:
+        return FormatInstruction($"if R[{b}] < R[{c}] then pc++ end");
+    case Opcode.LE:
+        return FormatInstruction($"if R[{b}] <= R[{c}] then pc++ end");
+    case Opcode.TEST:
+        return FormatInstruction($"if not R[{a}] then pc++ end");
+    case Opcode.TESTSET:
+        return FormatInstruction($"if R[{b}] then R[{a}] = R[{b}] else pc++ end");
+    case Opcode.CALL:
+        return FormatInstruction($"R[{a}] = R[{a}]({GetArguments(a + 1, b - 1)}); R[{a + b - 1}] = {GetArguments(a, c - 1)}");
+    case Opcode.TAILCALL:
+        return FormatInstruction($"return R[{a}]({GetArguments(a + 1, b - 1)})");
+    case Opcode.RETURN:
+        return FormatInstruction($"return {GetArguments(a, b - 1)}");
+    case Opcode.FORLOOP:
+        return FormatInstruction($"R[{a}] += R[{a + 2}]; if R[{a}] <= R[{a + 1}] then pc += {sbx}; R[{a + 3}] = R[{a}]");
+    case Opcode.FORPREP:
+        return FormatInstruction($"R[{a}] -= R[{a + 2}]; pc += {sbx}");
+    case Opcode.TFORCALL:
+        return FormatInstruction($"R[{a + 3}] = R[{a}]({GetArguments(a + 1, c)})");
+    case Opcode.TFORLOOP:
+        return FormatInstruction($"if R[{a + 1}] then R[{a + 3}] = R[{a + 1}]; pc += {sbx} end");
+    case Opcode.SETLIST:
+        return FormatInstruction($"for i = 1, {b} do R[{a}][i + {(c - 1) * 50}] = R[{a + i}] end");
+    case Opcode.CLOSURE:
+        return FormatInstruction($"R[{a}] = function(K[{bx}]) end");
+    case Opcode.VARARG:
+        return FormatInstruction($"R[{a}] = ...");
+    case Opcode.EXTRAARG:
+        return FormatInstruction($"-- EXTRAARG with value {bx}");
+    case Opcode.LOADKX:
+        return FormatInstruction($"R[{a}] = K[EXTRAARG]");
+    case Opcode.GETTABUP:
+        return FormatInstruction($"R[{a}] = UpValue[{b}][RK[{c}]]");
+    case Opcode.SETTABUP:
+        return FormatInstruction($"UpValue[{a}][RK[{b}]] = RK[{c}]");
+    case Opcode.TAILCALLI:
+        return FormatInstruction($"return R[{a}]({GetArguments(a + 1, b - 1)})");
+    case Opcode.GETUPVALI:
+        return FormatInstruction($"R[{a}] = UpValue[{b}]");
+    case Opcode.GETGLOBALI:
+        return FormatInstruction($"R[{a}] = _G[{bx}]");
+    case Opcode.GETTABLEI:
+        return FormatInstruction($"R[{a}] = R[{b}][RK[{c}]]");
+    case Opcode.SETUPVALI:
+        return FormatInstruction($"UpValue[{b}] = R[{a}]");
+    case Opcode.SETGLOBALI:
+        return FormatInstruction($"_G[{bx}] = R[{a}]");
+    case Opcode.SETTABLEI:
+        return FormatInstruction($"R[{a}] = R[{b}][RK[{c}]]");
+    case Opcode.NEWTABLEI:
+        return FormatInstruction($"R[{a}] = {{}} -- size = {b},{c}");
+    case Opcode.SELF2:
+        return FormatInstruction($"R[{a + 1}] = R[{b}]; R[{a}] = R[{b}][RK[{c}]]");
+    case Opcode.ADD2:
+        return FormatInstruction($"R[{a}] = RK[{b}] + RK[{c}]");
+    case Opcode.SUB2:
+        return FormatInstruction($"R[{a}] = RK[{b}] - RK[{c}]");
+    case Opcode.MUL2:
+        return FormatInstruction($"R[{a}] = RK[{b}] * RK[{c}]");
+    case Opcode.DIV2:
+        return FormatInstruction($"R[{a}] = RK[{b}] / RK[{c}]");
+    case Opcode.MOD2:
+        return FormatInstruction($"R[{a}] = RK[{b}] % RK[{c}]");
+    case Opcode.POW2:
+        return FormatInstruction($"R[{a}] = RK[{b}] ^ RK[{c}]");
+    case Opcode.UNM2:
+        return FormatInstruction($"R[{a}] = -R[{b}]");
+    case Opcode.NOT2:
+        return FormatInstruction($"R[{a}] = not R[{b}]");
+    case Opcode.LEN2:
+        return FormatInstruction($"R[{a}] = #R[{b}]");
+    case Opcode.CONCAT2:
+        return FormatInstruction($"R[{a}] = R[{b}] .. R[{c}]");
+    case Opcode.JMP2:
+        return FormatInstruction($"pc += {sbx}");
+    case Opcode.EQ2:
+        return FormatInstruction($"if R[{b}] == R[{c}] then pc++ end");
+    case Opcode.LT2:
+        return FormatInstruction($"if R[{b}] < R[{c}] then pc++ end");
+    case Opcode.LE2:
+        return FormatInstruction($"if R[{b}] <= R[{c}] then pc++ end");
+    case Opcode.TEST2:
+        return FormatInstruction($"if not R[{a}] then pc++ end");
+    case Opcode.TESTSET2:
+        return FormatInstruction($"if R[{b}] then R[{a}] = R[{b}] else pc++ end");
+    case Opcode.CALL2:
+        return FormatInstruction($"R[{a}] = R[{a}]({GetArguments(a + 1, b - 1)}); R[{a + b - 1}] = {GetArguments(a, c - 1)}");
+    case Opcode.RETURN2:
+        return FormatInstruction($"return {GetArguments(a, b - 1)}");
+    case Opcode.FORLOOP2:
+        return FormatInstruction($"R[{a}] += R[{a + 2}]; if R[{a}] <= R[{a + 1}] then pc += {sbx}; R[{a + 3}] = R[{a}]");
+    case Opcode.FORPREP2:
+        return FormatInstruction($"R[{a}] -= R[{a + 2}]; pc += {sbx}");
+    case Opcode.TFORCALL2:
+        return FormatInstruction($"R[{a + 3}] = R[{a}]({GetArguments(a + 1, c)})");
+    case Opcode.TFORLOOP2:
+        return FormatInstruction($"if R[{a + 1}] then R[{a + 3}] = R[{a + 1}]; pc += {sbx} end");
+    case Opcode.SETLIST2:
+        return FormatInstruction($"for i = 1, {b} do R[{a}][i + {(c - 1) * 50}] = R[{a + i}] end");
+    case Opcode.CLOSE2:
+        return FormatInstruction($"-- CLOSE2 operation");
+    case Opcode.CLOSURE2:
+        return FormatInstruction($"R[{a}] = function(K[{bx}]) end");
+    case Opcode.VARARG2:
+        return FormatInstruction($"R[{a}] = ...");
 
                 default:
                     return $"-- Unhandled opcode {opcode}\n";
