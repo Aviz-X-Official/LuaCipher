@@ -1,55 +1,93 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 
-namespace RobloxExecutor
+namespace RobloxDecompiler
 {
-    class Program
+    public class LuaUDecompiler
     {
-        private const int MOVE = 0;      // R[A] := R[B]
-        private const int LOADK = 1;     // R[A] := Kst[Bx]
-        private const int LOADBOOL = 2;  // R[A] := (bool)B; if (C) pc++
-        private const int LOADNIL = 3;   // R[A], R[A+1], ..., R[A+B] := nil
-        private const int GETUPVAL = 4;  // R[A] := UpValue[B]
-        private const int GETGLOBAL = 5; // R[A] := Gbl[Kst[Bx]]
-        private const int GETTABLE = 6;  // R[A] := R[B][RK[C]]
-        private const int SETGLOBAL = 7; // Gbl[Kst[Bx]] := R[A]
-        private const int SETUPVAL = 8;  // UpValue[B] := R[A]
-        private const int SETTABLE = 9;  // R[A][RK[B]] := RK[C]
-        private const int NEWTABLE = 10; // R[A] := {} (size = B,C)
-        private const int SELF = 11;     // R[A+1] := R[B]; R[A] := R[B][RK[C]]
-        private const int ADD = 12;      // R[A] := RK[B] + RK[C]
-        private const int SUB = 13;      // R[A] := RK[B] - RK[C]
-        private const int MUL = 14;      // R[A] := RK[B] * RK[C]
-        private const int DIV = 15;      // R[A] := RK[B] / RK[C]
-        private const int MOD = 16;      // R[A] := RK[B] % RK[C]
-        private const int POW = 17;      // R[A] := RK[B] ^ RK[C]
-        private const int UNM = 18;      // R[A] := -R[B]
-        private const int NOT = 19;      // R[A] := not R[B]
-        private const int LEN = 20;      // R[A] := length of R[B]
-        private const int CONCAT = 21;   // R[A] := R[B] .. ... .. R[C]
-        private const int JMP = 22;      // pc+=sBx
-        private const int EQ = 23;       // if ((RK[B] == RK[C]) ~= A) then pc++
-        private const int LT = 24;       // if ((RK[B] <  RK[C]) ~= A) then pc++
-        private const int LE = 25;       // if ((RK[B] <= RK[C]) ~= A) then pc++
-        private const int TEST = 26;     // if not (R[A] <=> C) then pc++
-        private const int TESTSET = 27;  // if (R[B] <=> C) then R[A] := R[B] else pc++
-        private const int CALL = 28;     // R[A], ... ,R[A+C-2] := R[A](R[A+1], ... ,R[A+B-1])
-        private const int RETURN = 29;   // return R[A], ... ,R[A+B-2]
-        private const int FORLOOP = 30;  // R[A]+=-1; if R[A] <= R[A+2] then { pc+=sBx; R[A+3]=R[A] }
-        private const int FORPREP = 31;  // R[A]-=R[A+2]; pc+=sBx
-        private const int TFORCALL = 32; // R[A+3], ... ,R[A+2+C] := R[A](R[A+1], R[A+2])
-        private const int TFORLOOP = 33; // if R[A+1] ~= nil then { R[A]=R[A+1]; pc += sBx }
-
-        static void Main(string[] args)
+        private enum Opcode
         {
-            string obfuscatedScript = "AAAAAAAABgAAAAAABQAAAAABAAAAAAo="; // Example Base64-encoded Lua bytecode
-            string decompiledScript = DecompileScript(obfuscatedScript);
-
-            Console.WriteLine("Decompiled Script:");
-            Console.WriteLine(decompiledScript);
+            MOVE = 0,
+            LOADK = 1,
+            LOADBOOL = 2,
+            LOADNIL = 3,
+            GETUPVAL = 4,
+            GETGLOBAL = 5,
+            GETTABLE = 6,
+            SETGLOBAL = 7,
+            SETUPVAL = 8,
+            SETTABLE = 9,
+            NEWTABLE = 10,
+            SELF = 11,
+            ADD = 12,
+            SUB = 13,
+            MUL = 14,
+            DIV = 15,
+            MOD = 16,
+            POW = 17,
+            UNM = 18,
+            NOT = 19,
+            LEN = 20,
+            CONCAT = 21,
+            JMP = 22,
+            EQ = 23,
+            LT = 24,
+            LE = 25,
+            TEST = 26,
+            TESTSET = 27,
+            CALL = 28,
+            TAILCALL = 29,
+            RETURN = 30,
+            FORLOOP = 31,
+            FORPREP = 32,
+            TFORCALL = 33,
+            TFORLOOP = 34,
+            SETLIST = 35,
+            CLOSURE = 36,
+            VARARG = 37,
+            EXTRAARG = 38,
+            LOADKX = 39,
+            GETTABUP = 40,
+            SETTABUP = 41,
+            TAILCALLI = 42,
+            GETUPVALI = 43,
+            GETGLOBALI = 44,
+            GETTABLEI = 45,
+            SETUPVALI = 46,
+            SETGLOBALI = 47,
+            SETTABLEI = 48,
+            NEWTABLEI = 49,
+            SELF2 = 50,
+            ADD2 = 51,
+            SUB2 = 52,
+            MUL2 = 53,
+            DIV2 = 54,
+            MOD2 = 55,
+            POW2 = 56,
+            UNM2 = 57,
+            NOT2 = 58,
+            LEN2 = 59,
+            CONCAT2 = 60,
+            JMP2 = 61,
+            EQ2 = 62,
+            LT2 = 63,
+            LE2 = 64,
+            TEST2 = 65,
+            TESTSET2 = 66,
+            CALL2 = 67,
+            RETURN2 = 68,
+            FORLOOP2 = 69,
+            FORPREP2 = 70,
+            TFORCALL2 = 71,
+            TFORLOOP2 = 72,
+            SETLIST2 = 73,
+            CLOSE2 = 74,
+            CLOSURE2 = 75,
+            VARARG2 = 76
         }
 
-        static string DecompileScript(string bytecode)
+        public string DecompileScript(string bytecode)
         {
             try
             {
@@ -59,17 +97,20 @@ namespace RobloxExecutor
 
                 return decompiledScript;
             }
+            catch (FormatException ex)
+            {
+                throw new LuaUDecompilerException("Failed to decode Base64 bytecode", ex);
+            }
             catch (Exception ex)
             {
-                Console.WriteLine($"Decompilation failed: {ex.Message}");
-                return bytecode;
+                throw new LuaUDecompilerException("Decompilation failed", ex);
             }
         }
 
-        static string BytecodeToLua(byte[] bytecode)
+        private string BytecodeToLua(byte[] bytecode)
         {
             StringBuilder luaSource = new StringBuilder();
-            luaSource.Append("-- Decompiled Lua script\n");
+            luaSource.Append("-- Decompiled LuaU script\n");
 
             int index = 0;
             while (index < bytecode.Length)
@@ -77,7 +118,6 @@ namespace RobloxExecutor
                 if (index + 3 >= bytecode.Length)
                     break;
 
-                // Each Lua instruction is 4 bytes
                 uint instruction = BitConverter.ToUInt32(bytecode, index);
                 luaSource.Append(ParseInstruction(instruction));
                 index += 4;
@@ -86,7 +126,7 @@ namespace RobloxExecutor
             return luaSource.ToString();
         }
 
-        static string ParseInstruction(uint instruction)
+        private string ParseInstruction(uint instruction)
         {
             int opcode = (int)(instruction & 0x3F);        // 6 bits
             int a = (int)((instruction >> 6) & 0xFF);      // 8 bits
@@ -95,90 +135,113 @@ namespace RobloxExecutor
             int bx = (int)((instruction >> 14) & 0x3FFFF); // 18 bits
             int sbx = bx - 131071; // signed Bx
 
-            switch (opcode)
+            switch ((Opcode)opcode)
             {
-                case MOVE:
-                    return $"R[{a}] = R[{b}]\n";
-                case LOADK:
-                    return $"R[{a}] = K[{bx}]\n";
-                case LOADBOOL:
-                    return $"R[{a}] = {(b != 0 ? "true" : "false")}; if ({c} != 0) then pc++ end\n";
-                case LOADNIL:
-                    return $"for i = {a}, {a + b} do R[i] = nil end\n";
-                case GETUPVAL:
-                    return $"R[{a}] = UpValue[{b}]\n";
-                case GETGLOBAL:
-                    return $"R[{a}] = G[{bx}]\n";
-                case GETTABLE:
-                    return $"R[{a}] = R[{b}][RK[{c}]]\n";
-                case SETGLOBAL:
-                    return $"G[{bx}] = R[{a}]\n";
-                case SETUPVAL:
-                    return $"UpValue[{b}] = R[{a}]\n";
-                case SETTABLE:
-                    return $"R[{a}][RK[{b}]] = RK[{c}]\n";
-                case NEWTABLE:
-                    return $"R[{a}] = {{}} -- size = {b},{c}\n";
-                case SELF:
-                    return $"R[{a + 1}] = R[{b}]; R[{a}] = R[{b}][RK[{c}]]\n";
-                case ADD:
-                    return $"R[{a}] = RK[{b}] + RK[{c}]\n";
-                case SUB:
-                    return $"R[{a}] = RK[{b}] - RK[{c}]\n";
-                case MUL:
-                    return $"R[{a}] = RK[{b}] * RK[{c}]\n";
-                case DIV:
-                    return $"R[{a}] = RK[{b}] / RK[{c}]\n";
-                case MOD:
-                    return $"R[{a}] = RK[{b}] % RK[{c}]\n";
-                case POW:
-                    return $"R[{a}] = RK[{b}] ^ RK[{c}]\n";
-                case UNM:
-                    return $"R[{a}] = -R[{b}]\n";
-                case NOT:
-                    return $"R[{a}] = not R[{b}]\n";
-                case LEN:
-                    return $"R[{a}] = #R[{b}]\n";
-                case CONCAT:
-                    return $"R[{a}] = R[{b}] .. R[{c}]\n";
-                case JMP:
-                    return $"pc += {sbx}\n";
-                case EQ:
-                    return $"if R[{b}] == R[{c}] then pc++ end\n";
-                case LT:
-                    return $"if R[{b}] < R[{c}] then pc++ end\n";
-                case LE:
-                    return $"if R[{b}] <= R[{c}] then pc++ end\n";
-                case TEST:
-                    return $"if not R[{a}] then pc++ end\n";
-                case TESTSET:
-                    return $"if R[{b}] then R[{a}] = R[{b}] else pc++ end\n";
-                case CALL:
-                    return $"R[{a}], ... ,R[{a+c-2}] = R[{a}]({GetArguments(a + 1, b - 1)})\n";
-                case RETURN:
-                    return $"return {GetArguments(a, b - 1)}\n";
-                case FORLOOP:
-                    return $"R[{a}] += -1; if R[{a}] <= R[{a + 2}] then pc += {sbx}; R[{a + 3}] = R[{a}] end\n";
-                case FORPREP:
-                    return $"R[{a}] -= R[{a + 2}]; pc += {sbx}\n";
-                case TFORCALL:
-                    return $"R[{a + 3}], ... ,R[{a + 2 + c}] = R[{a}]({GetArguments(a + 1, 2)})\n";
-                case TFORLOOP:
-                    return $"if R[{a + 1}] ~= nil then R[{a}] = R[{a + 1}]; pc += {sbx} end\n";
+                case Opcode.MOVE:
+                    return FormatInstruction("MOVE", $"R[{a}] = R[{b}]");
+                case Opcode.LOADK:
+                    return FormatInstruction("LOADK", $"R[{a}] = K[{bx}]");
+                case Opcode.LOADBOOL:
+                    return FormatInstruction("LOADBOOL", $"R[{a}] = {(b != 0 ? "true" : "false")}; if ({c} != 0) then pc++ end");
+                case Opcode.LOADNIL:
+                    return FormatInstruction("LOADNIL", $"for i = {a}, {a + b} do R[i] = nil end");
+                case Opcode.GETUPVAL:
+                    return FormatInstruction("GETUPVAL", $"R[{a}] = UpValue[{b}]");
+                case Opcode.GETGLOBAL:
+                    return FormatInstruction("GETGLOBAL", $"R[{a}] = G[{bx}]");
+                case Opcode.GETTABLE:
+                    return FormatInstruction("GETTABLE", $"R[{a}] = R[{b}][RK[{c}]]");
+                case Opcode.SETGLOBAL:
+                    return FormatInstruction("SETGLOBAL", $"G[{bx}] = R[{a}]");
+                case Opcode.SETUPVAL:
+                    return FormatInstruction("SETUPVAL", $"UpValue[{b}] = R[{a}]");
+                case Opcode.SETTABLE:
+                    return FormatInstruction("SETTABLE", $"R[{a}][RK[{b}]] = RK[{c}]");
+                case Opcode.NEWTABLE:
+                    return FormatInstruction("NEWTABLE", $"R[{a}] = {{}} -- size = {b},{c}");
+                case Opcode.SELF:
+                    return FormatInstruction("SELF", $"R[{a + 1}] = R[{b}]; R[{a}] = R[{b}][RK[{c}]]");
+                case Opcode.ADD:
+                    return FormatInstruction("ADD", $"R[{a}] = RK[{b}] + RK[{c}]");
+                case Opcode.SUB:
+                    return FormatInstruction("SUB", $"R[{a}] = RK[{b}] - RK[{c}]");
+                case Opcode.MUL:
+                    return FormatInstruction("MUL", $"R[{a}] = RK[{b}] * RK[{c}]");
+                case Opcode.DIV:
+                    return FormatInstruction("DIV", $"R[{a}] = RK[{b}] / RK[{c}]");
+                case Opcode.MOD:
+                    return FormatInstruction("MOD", $"R[{a}] = RK[{b}] % RK[{c}]");
+                case Opcode.POW:
+                    return FormatInstruction("POW", $"R[{a}] = RK[{b}] ^ RK[{c}]");
+                case Opcode.UNM:
+                    return FormatInstruction("UNM", $"R[{a}] = -R[{b}]");
+                case Opcode.NOT:
+                    return FormatInstruction("NOT", $"R[{a}] = not R[{b}]");
+                case Opcode.LEN:
+                    return FormatInstruction("LEN", $"R[{a}] = #R[{b}]");
+                case Opcode.CONCAT:
+                    return FormatInstruction("CONCAT", $"R[{a}] = R[{b}] .. R[{c}]");
+                case Opcode.JMP:
+                    return FormatInstruction("JMP", $"pc += {sbx}");
+                case Opcode.EQ:
+                    return FormatInstruction("EQ", $"if R[{b}] == R[{c}] then pc++ end");
+                case Opcode.LT:
+                    return FormatInstruction("LT", $"if R[{b}] < R[{c}] then pc++ end");
+                case Opcode.LE:
+                    return FormatInstruction("LE", $"if R[{b}] <= R[{c}] then pc++ end");
+                case Opcode.TEST:
+                    return FormatInstruction("TEST", $"if not R[{a}] then pc++ end");
+                case Opcode.TESTSET:
+                    return FormatInstruction("TESTSET", $"if R[{b}] then R[{a}] = R[{b}] else pc++ end");
+                case Opcode.CALL:
+                    return FormatInstruction("CALL", $"R[{a}], ... ,R[{a + c - 2}] = R[{a}]({GetArguments(a + 1, b - 1)})");
+                case Opcode.TAILCALL:
+                    return FormatInstruction("TAILCALL", $"return R[{a}]({GetArguments(a + 1, b - 1)})");
+                case Opcode.RETURN:
+                    return FormatInstruction("RETURN", $"return {GetArguments(a, b - 1)}");
+                case Opcode.FORLOOP:
+                    return FormatInstruction("FORLOOP", $"R[{a}] += 1; if R[{a}] <= R[{a + 2}] then pc += {sbx}; R[{a + 3}] = R[{a}] end");
+                case Opcode.FORPREP:
+                    return FormatInstruction("FORPREP", $"R[{a}] -= R[{a + 2}]; pc += {sbx}");
+                case Opcode.TFORCALL:
+                    return FormatInstruction("TFORCALL", $"R[{a + 3}], ... ,R[{a + 2 + c}] = R[{a}](R[{a + 1}], R[{a + 2}])");
+                case Opcode.TFORLOOP:
+                    return FormatInstruction("TFORLOOP", $"if R[{a + 1}] ~= nil then R[{a}] = R[{a + 1}]; pc += {sbx} end");
+                case Opcode.SETLIST:
+                    return FormatInstruction("SETLIST", $"for i = 1, {b} do R[{a}][(c - 1) * 50 + i] = R[{a + i}] end");
+                case Opcode.CLOSE:
+                    return FormatInstruction("CLOSE", $"-- Close all variables in the stack above R[{a}]");
+                case Opcode.CLOSURE:
+                    return FormatInstruction("CLOSURE", $"R[{a}] = closure({bx})");
+                case Opcode.VARARG:
+                    return FormatInstruction("VARARG", $"R[{a}], ... ,R[{a + b - 1}] = ...");
+                case Opcode.EXTRAARG:
+                    return FormatInstruction("EXTRAARG", $"-- Extra argument {instruction >> 6}");
                 default:
-                    return $"-- Unknown instruction: {instruction}\n";
+                    return FormatInstruction("UNKNOWN", $"Unknown opcode {opcode}");
             }
         }
 
-        static string GetArguments(int start, int count)
+        private string FormatInstruction(string opcode, string arguments)
         {
-            StringBuilder args = new StringBuilder();
-            for (int i = start; i < start + count; i++)
-            {
-                if (i > start) args.Append(", ");
-                args.Append($"R[{i}]");
-            }
-            return args.ToString();
+            return $"{opcode} {arguments}\n";
         }
+
+        private string GetArguments(int start, int count)
+        {
+            List<string> args = new List<string>();
+            for (int i = 0; i < count; i++)
+            {
+                args.Add($"R[{start + i}]");
+            }
+            return string.Join(", ", args);
+        }
+    }
+
+    public class LuaUDecompilerException : Exception
+    {
+        public LuaUDecompilerException(string message) : base(message) { }
+
+        public LuaUDecompilerException(string message, Exception innerException) : base(message, innerException) { }
     }
 }
